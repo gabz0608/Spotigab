@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<!-- Documento principal da aplicação; pt-BR também orienta leitores de tela e corretores ortográficos. -->
+<html lang="pt-BR">
+<head>
+    <!-- Metadados básicos para caracteres acentuados, adaptação a telas e título da aba. -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spotigab</title>
+    <link rel="stylesheet" href="CSS/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <!-- Contêiner geral: reúne a navegação lateral e a área que troca entre as telas. -->
+    <div class="app-container">
+        <!-- Barra lateral persistente com navegação, acesso ao iTunes e dados da sessão. -->
+        <aside class="sidebar">
+            <div class="logo">
+                <i class="fa-solid fa-headphones-simple"></i>
+                <span>Spotigab</span>
+            </div>
+
+            <!-- Cada link tem um ID que o script.js usa para escolher a seção visível. -->
+            <nav class="nav-menu">
+                <a href="#" id="nav-home" class="nav-item active"><i class="fa-solid fa-house"></i> Início</a>
+                <a href="#" id="nav-mine" class="nav-item"><i class="fa-solid fa-compact-disc"></i> Minhas músicas</a>
+                <a href="#" id="nav-liked" class="nav-item"><i class="fa-solid fa-heart"></i> Músicas curtidas</a>
+            </nav>
+
+            <!-- Este botão abre o modal de busca externa do iTunes. -->
+            <button id="btn-import-itunes" class="btn-itunes" type="button">
+                <i class="fa-brands fa-apple"></i> Importar do iTunes
+            </button>
+
+            <!-- O JavaScript preenche nome e tipo de conta depois de ler o usuário autenticado. -->
+            <div class="user-profile-bar">
+                <div class="user-info">
+                    <span id="user-display-name">-</span>
+                    <span id="user-role-tag" class="role-badge">-</span>
+                </div>
+                <button id="btn-logout" type="button" title="Sair da conta">
+                    <i class="fa-solid fa-right-from-bracket"></i> Sair
+                </button>
+            </div>
+        </aside>
+
+        <!-- Área principal: as três seções usam a classe hidden para alternar a navegação. -->
+        <main class="main-content">
+
+            <!-- Catálogo geral. script.js cria os cards dentro deste elemento após ler o banco. -->
+            <section id="view-home" class="view-section">
+                <h2>Músicas disponíveis</h2>
+                <div id="songs-grid" class="songs-grid"></div>
+            </section>
+
+            <!-- A lista de curtidas é filtrada no JavaScript pelo UID da sessão atual. -->
+            <section id="view-liked" class="view-section hidden">
+                <h2>Músicas curtidas</h2>
+                <div id="liked-songs-grid" class="songs-grid"></div>
+            </section>
+
+            <!-- Tela pessoal; criadores veem o formulário e sua lista de músicas cadastradas. -->
+            <section id="view-mine" class="view-section hidden">
+                <h2>Minhas músicas</h2>
+                <div class="creator-container">
+                    <!-- Formulário visível somente para Criadores -->
+                    <!-- submit é tratado pelo script.js, que valida dados e chama as operações do CRUD.js. -->
+                    <form id="creator-form" class="creator-form hidden" novalidate>
+                        <h3>Cadastrar ou editar música</h3>
+
+                        <!-- O accept ajuda o seletor a filtrar arquivos; a validação real ocorre no JavaScript. -->
+                        <div class="form-group">
+                            <label for="song-title">Título</label>
+                            <input type="text" id="song-title" required maxlength="100" placeholder="Ex: Blinding Lights">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="song-artist">Artista</label>
+                            <input type="text" id="song-artist" required maxlength="100" placeholder="Ex: The Weeknd">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Áudio (.mp3 ou .mp4, até 50 MB)</label>
+<input type="file" id="song-audio-file" accept=".mp3,.mp4,audio/mpeg,audio/mp4,video/mp4" class="file-input">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Capa (imagem até 5 MB ou URL)</label>
+                            <input type="file" id="song-cover-file" accept="image/jpeg,image/png,image/webp,image/gif" class="file-input">
+                            <input type="url" id="song-cover-url" placeholder="Ou cole o link da imagem (https://...)" style="margin-top: 8px;">
+                        </div>
+
+                        <button type="submit" id="btn-submit-song" class="btn-submit">Cadastrar música</button>
+                        <button type="button" id="btn-cancel-edit" class="btn-cancel hidden">Cancelar edição</button>
+                    </form>
+
+                    <div class="published-section">
+                        <h3>Músicas cadastradas (<span id="published-count-badge">0</span>)</h3>
+                        <div id="creator-published-list" class="songs-grid"></div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- PLAYER FIXO -->
+    <footer class="player-bar">
+        <div class="player-left">
+            <img id="player-cover" src="https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=500&q=80" alt="Capa">
+            <div class="player-track-info">
+                <span id="player-title" class="track-title">Selecione uma música</span>
+                <span id="player-artist" class="track-artist">-</span>
+                <span id="player-preview" class="preview-badge hidden">Prévia de 30 s</span>
+            </div>
+            <button id="btn-like-player" class="btn-like-player" type="button" title="Curtir / descurtir" disabled>
+                <i class="fa-regular fa-heart"></i>
+            </button>
+        </div>
+
+        <!-- Centro do player: controles e progresso ligados ao mesmo elemento de áudio. -->
+        <div class="player-center">
+            <div class="player-controls">
+                <button id="btn-prev" class="control-btn" type="button" title="Anterior" disabled>
+                    <i class="fa-solid fa-backward-step"></i>
+                </button>
+                <button id="btn-play" class="control-btn btn-play-main" type="button" title="Tocar / pausar" disabled>
+                    <i id="play-icon" class="fa-solid fa-play"></i>
+                </button>
+                <button id="btn-next" class="control-btn" type="button" title="Próxima" disabled>
+                    <i class="fa-solid fa-forward-step"></i>
+                </button>
+            </div>
+            <!-- O range mostra a porcentagem tocada; os tempos são atualizados pelos eventos do áudio. -->
+            <div class="progress-row">
+                <span id="current-time" class="playback-time">0:00</span>
+                <input id="progress-control" type="range" min="0" max="100" step="0.1" value="0" aria-label="Progresso da música" disabled>
+                <span id="duration-time" class="playback-time"></span>
+            </div>
+        </div>
+
+        <!-- Direita: controle de volume separado dos botões centrais. -->
+        <div class="player-right">
+            <i class="fa-solid fa-volume-low" aria-hidden="true"></i>
+            <input id="volume-control" type="range" min="0" max="1" step="0.01" value="1" title="Volume" aria-label="Volume">
+            <i class="fa-solid fa-volume-high" aria-hidden="true"></i>
+        </div>
+
+        <!-- Único elemento de mídia: recebe Data URLs das músicas cadastradas ou previews do iTunes. -->
+        <audio id="audio-player" preload="none"></audio>
+    </footer>
+
+    <!-- Modal de busca. O CSS desativa cliques quando fechado e o abre ao receber a classe active. -->
+    <div id="itunes-modal" class="auth-modal itunes-modal">
+        <div class="auth-card itunes-modal-card">
+            <div class="auth-header">
+                <i class="fa-brands fa-apple modal-logo"></i>
+                <h2>Importar do iTunes</h2>
+                <p class="modal-note">O iTunes fornece apenas prévias de cerca de 30 segundos, não a música completa.</p>
+            </div>
+            <div class="form-group">
+                <div style="display: flex; gap: 8px;">
+                    <!-- O foco é colocado neste campo ao abrir o modal; Enter e o botão chamam a mesma busca. -->
+                    <input type="text" id="itunes-search-input" placeholder="Digite o nome da música ou do artista" autocomplete="off">
+                    <!-- type=button evita submissão acidental; o listener onclick executa buscar(). -->
+                    <button id="btn-itunes-search-exec" class="btn-auth" type="button" style="width: auto; padding: 0 20px;">Buscar</button>
+                </div>
+            </div>
+            <!-- script.js recria apenas o conteúdo desta lista com nós e textContent. -->
+            <div id="itunes-results-list" class="itunes-results-list"></div>
+            <button id="btn-close-itunes-modal" class="btn-auth" type="button" style="background: #333; color: #fff; margin-top: 16px;">Fechar</button>
+        </div>
+    </div>
+
+    <!-- Modal de autenticação inicial. O Firebase decide se ele fica aberto ao observar a sessão. -->
+    <div id="auth-modal" class="auth-modal active">
+        <div class="auth-card">
+            <div class="auth-header">
+                <i class="fa-solid fa-headphones-simple modal-logo"></i>
+                <h2 id="auth-modal-title">Entrar no Spotigab</h2>
+            </div>
+
+            <!-- Os formulários são interceptados pelo script.js para enviar os dados ao Firebase Authentication. -->
+            <form id="login-form" class="auth-form">
+                <div class="form-group">
+                    <label for="login-email">E-mail</label>
+                    <input type="email" id="login-email" required placeholder="nome@exemplo.com" autocomplete="email">
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Senha</label>
+                    <input type="password" id="login-password" required placeholder="Sua senha" autocomplete="current-password">
+                </div>
+                <button type="submit" class="btn-auth">Entrar</button>
+                <p class="auth-switch">Não tem uma conta? <a href="#" id="link-show-register">Criar conta</a></p>
+            </form>
+
+            <!-- Formulário alternativo para criar conta e salvar o perfil complementar no Realtime Database. -->
+            <form id="register-form" class="auth-form hidden">
+                <div class="form-group">
+                    <label for="reg-name">Nome de exibição</label>
+                    <input type="text" id="reg-name" required maxlength="40" placeholder="Como devemos chamar você?">
+                </div>
+                <div class="form-group">
+                    <label for="reg-email">E-mail</label>
+                    <input type="email" id="reg-email" required placeholder="nome@exemplo.com" autocomplete="email">
+                </div>
+                <div class="form-group">
+                    <label for="reg-password">Senha (mínimo de 6 caracteres)</label>
+                    <input type="password" id="reg-password" required minlength="6" placeholder="Crie uma senha" autocomplete="new-password">
+                </div>
+                <div class="form-group">
+                    <label>Tipo de conta</label>
+                    <div class="role-selector">
+                        <label class="radio-label"><input type="radio" name="account-role" value="listener" checked><span>Ouvinte</span></label>
+                        <label class="radio-label"><input type="radio" name="account-role" value="creator"><span>Criador</span></label>
+                    </div>
+                </div>
+                <button type="submit" class="btn-auth">Criar conta</button>
+                <p class="auth-switch">Já tem uma conta? <a href="#" id="link-show-login">Voltar ao login</a></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Mensagens curtas de sucesso/erro são escritas aqui sem substituir a página. -->
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <!-- Carrega os módulos depois da marcação; script.js conecta eventos e CRUD.js conversa com Firebase. -->
+    <script type="module" src="JS/script.js"></script>
+</body>
+</html>
