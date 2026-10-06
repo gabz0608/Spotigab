@@ -1,6 +1,7 @@
 // O prefixo identifica apenas os caches do Spotigab neste domínio.
 const PREFIXO_CACHE = 'spotigab-shell-';
-const VERSAO_CACHE = `${PREFIXO_CACHE}v1`;
+// Ao atualizar esta versão, o evento install cria um cache novo com os arquivos atuais da interface.
+const VERSAO_CACHE = `${PREFIXO_CACHE}v2`;
 
 // Lista somente arquivos locais necessários para abrir a interface; APIs e áudios remotos não entram no cache.
 const ARQUIVOS_ESTATICOS = [

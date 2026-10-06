@@ -808,21 +808,6 @@ button.loading {
 }
 
 @media (max-width: 768px) {
-    #volume-control {
-        width: min(180px, 45vw);
-    }
-
-    .player-right {
-        width: auto;
-        min-width: 120px;
-    }
-
-    #volume-control {
-        width: 80px;
-    }
-}
-
-@media (max-width: 768px) {
     body {
         height: 100vh;
         height: 100dvh;
@@ -899,7 +884,9 @@ button.loading {
         padding: 7px 4px;
         font-size: 11px;
         text-align: center;
-        white-space: nowrap;
+        white-space: normal;
+        flex-direction: column;
+        line-height: 12px;
     }
 
     .nav-item i {
@@ -957,11 +944,11 @@ button.loading {
         flex: 0 0 auto;
         display: grid;
         grid-template-columns: minmax(0, 1fr) auto;
-        grid-template-areas: "track controls" "volume volume" "progress progress";
+        grid-template-areas: "track controls" "progress progress";
         gap: 2px 8px;
         width: 100%;
         height: auto;
-        min-height: 136px;
+        min-height: 112px;
         padding: 6px 12px max(8px, env(safe-area-inset-bottom));
     }
 
@@ -1010,12 +997,13 @@ button.loading {
     .progress-row {
         grid-area: progress;
         width: 100%;
-        min-height: 32px;
+        min-height: 44px;
         gap: 6px;
     }
 
     #progress-control {
-        height: 24px;
+        height: 44px;
+        touch-action: pan-y;
         margin: 0;
     }
 
@@ -1024,17 +1012,8 @@ button.loading {
         font-size: 10px;
     }
 
-    #volume-control {
-        width: min(180px, 45vw);
-    }
-
     .player-right {
-        grid-area: volume;
-        display: flex;
-        width: 100%;
-        min-width: 0;
-        min-height: 26px;
-        justify-content: flex-end;
+        display: none;
     }
 
     .auth-modal {
@@ -1064,7 +1043,7 @@ button.loading {
     }
 
     .toast {
-        bottom: calc(148px + env(safe-area-inset-bottom));
+        bottom: calc(124px + env(safe-area-inset-bottom));
     }
 }
 
@@ -1107,25 +1086,12 @@ button.loading {
     }
 
     .player-bar {
-        min-height: 126px;
+        min-height: 88px;
         grid-template-columns: minmax(0, 1fr) auto;
-        grid-template-areas: "track controls" "volume volume" "progress progress";
+        grid-template-areas: "track controls" "progress progress";
         gap: 8px;
         padding-top: 4px;
         padding-bottom: 4px;
-    }
-
-    .player-right {
-        grid-area: volume;
-        display: flex;
-        width: 100%;
-        min-width: 0;
-        min-height: 24px;
-        justify-content: flex-end;
-    }
-
-    #volume-control {
-        width: min(180px, 35vw);
     }
 
     .progress-row {
@@ -1133,6 +1099,6 @@ button.loading {
     }
 
     .toast {
-        bottom: 146px;
+        bottom: 96px;
     }
 }
